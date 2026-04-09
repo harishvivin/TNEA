@@ -548,43 +548,7 @@ header h1 {
     }
 }
 
-/* PDF Export Overrides */
-.pdf-export-mode {
-    background-color: #0d0f1a !important;
-    padding: 20px !important;
-    color: #ffffff !important;
-}
-
-.pdf-export-mode .data-grid-container {
-    overflow: visible !important;
-}
-
-.pdf-export-mode .glass-panel {
-    background-color: #1e1e2f !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: 1px solid #2a2a40 !important;
-}
-
-.pdf-export-mode th {
-    background-color: #151525 !important;
-    color: #94a3b8 !important;
-}
-
-.pdf-export-mode td {
-    color: #ffffff !important;
-    border-bottom: 1px solid #2a2a40 !important;
-}
-
-.pdf-export-mode .badge-autonomous {
-    background-color: rgba(16, 185, 129, 0.2) !important;
-    color: #10b981 !important;
-}
-
-.pdf-export-mode .badge-non-autonomous {
-    background-color: rgba(245, 158, 11, 0.2) !important;
-    color: #f59e0b !important;
-}
+/* Removed PDF Export Overrides as they are no longer needed */
 
 /* Responsive Design / Mobile Screen Fixes */
 @media screen and (max-width: 768px) {

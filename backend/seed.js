@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const College = require('./models/College');
 
-const MONGO_URI = 'mongodb://localhost:27017/tnea-predictor';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tnea-predictor';
 
 const mockColleges = [
   { name: 'J K K Munirajah College of Technology', district: 'Erode', type: 'Non-Autonomous', previousYearCutoff: 146.5 },
@@ -41,14 +41,14 @@ const mockColleges = [
   { name: 'Ranippettai Engineering College', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 129.75 },
   { name: 'Sri Nandhanam College of Engineering and Technology', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 141.25 },
   { name: 'Saraswathi Velu College of Engineering', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 116.25 },
-  { name: 'University College of Engineering, Nagercoil', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 189.75 },
-  { name: 'Maria College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 141.75 },
-  { name: 'Mar Ephraem College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 135.0 },
-  { name: 'Sivaji College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 118.5 },
-  { name: 'Satyam College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 106.5 },
-  { name: 'Arunachala College of Engineering for Women', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 157.0 },
-  { name: 'Vins Christian Women\'s College of Engineering', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 146.25 },
-  { name: 'Stella Mary\'s College of Engineering', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 153.5 },
+  { name: 'University College of Engineering, Nagercoil', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 189.75 },
+  { name: 'Maria College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 141.75 },
+  { name: 'Mar Ephraem College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 135.0 },
+  { name: 'Sivaji College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 118.5 },
+  { name: 'Satyam College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 106.5 },
+  { name: 'Arunachala College of Engineering for Women', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 157.0 },
+  { name: 'Vins Christian Women\'s College of Engineering', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 146.25 },
+  { name: 'Stella Mary\'s College of Engineering', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 153.5 },
   { name: 'University College of Engineering, Pattukkottai', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 178.75 },
   { name: 'SMR East Coast College of Engineering and Technology', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 127.5 },
   { name: 'Star Lion College of Engineering and Technology', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 96.25 },
@@ -81,12 +81,59 @@ const mockColleges = [
   { name: 'Prince Shri Venkateshwara Padmavathy Engineering College', district: 'Kanchipuram', type: 'Non-Autonomous', previousYearCutoff: 188.5 }
 ];
 
+const districts = [
+    "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", 
+    "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", 
+    "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai", 
+    "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", 
+    "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", 
+    "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", 
+    "Tirupattur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", 
+    "Vellore", "Viluppuram", "Virudhunagar"
+];
+
+const prefixes = ["Sri", "Global", "Excel", "Pioneer", "Royal", "National", "Mother Teresa", "Maha", "Kalaignar", "Amrita", "Bharath", "Kamaraj", "Dr. Kalam", "Anna", "CVS", "Jayam", "Muthayammal", "SNS", "RVS", "Karpagam", "Hindusthan", "Vellalar"];
+const suffixes = ["Engineering College", "Institute of Technology", "College of Engineering", "Institute of Science and Technology"];
+
+function getRandomType() {
+    const r = Math.random();
+    if (r < 0.25) return "Autonomous";
+    if (r < 0.90) return "Non-Autonomous";
+    if (r < 0.95) return "Government";
+    return "Government-Aided";
+}
+
+function getRandomCutoff() {
+    let cutoff = Math.random() * (199.5 - 90.0) + 90.0;
+    return Number((Math.round(cutoff * 2) / 2).toFixed(2));
+}
+
+// Generate an additional ~10-15 colleges per district to simulate ~500 total
+const generatedColleges = [];
+for (const district of districts) {
+    const numColleges = Math.floor(Math.random() * 6) + 10;
+    for (let i = 0; i < numColleges; i++) {
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+        const mid = Math.random() < 0.5 ? ' City' : (Math.random() < 0.5 ? ' Regional' : '');
+        const name = `${prefix}${mid} ${suffix} of ${district}`;
+        generatedColleges.push({
+            name: name,
+            district: district,
+            type: getRandomType(),
+            previousYearCutoff: getRandomCutoff()
+        });
+    }
+}
+
+const allColleges = [...mockColleges, ...generatedColleges];
+
 mongoose.connect(MONGO_URI)
   .then(async () => {
     console.log('Connected to MongoDB. Clearing previous entries...');
     await College.deleteMany({});
-    console.log('Inserting custom college data...');
-    await College.insertMany(mockColleges);
+    console.log(`Inserting ${allColleges.length} colleges including all 38 districts...`);
+    await College.insertMany(allColleges);
     console.log('Seeding Success!');
     process.exit(0);
   })

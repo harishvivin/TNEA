@@ -15,10 +15,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const emptyState = document.getElementById("empty-state");
     const loadingState = document.getElementById("loading-state");
 
+    let currentResults = []; // Store results globally for PDF generation
     const BASE_URL = 'http://localhost:5000/api/colleges';
 
-    // Fallback data if DB is down
-    const FALLBACK_DISTRICTS = ['Erode', 'Tiruppur', 'Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Vellore', 'Kanniyakumari', 'Thanjavur', 'Tirunelveli', 'Kanchipuram'];
+    const FALLBACK_DISTRICTS = [
+        "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", 
+        "Dharmapuri", "Dindigul", "Erode", "Kallakurichi", "Kanchipuram", 
+        "Kanyakumari", "Karur", "Krishnagiri", "Madurai", "Mayiladuthurai", 
+        "Nagapattinam", "Namakkal", "Nilgiris", "Perambalur", "Pudukkottai", 
+        "Ramanathapuram", "Ranipet", "Salem", "Sivaganga", "Tenkasi", 
+        "Thanjavur", "Theni", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", 
+        "Tirupattur", "Tiruppur", "Tiruvallur", "Tiruvannamalai", "Tiruvarur", 
+        "Vellore", "Viluppuram", "Virudhunagar"
+    ];
     const FALLBACK_COLLEGES = [
         { _id: '1', name: 'J K K Munirajah College of Technology', district: 'Erode', type: 'Non-Autonomous', previousYearCutoff: 146.5 },
         { _id: '2', name: 'Nandha College of Technology', district: 'Erode', type: 'Autonomous', previousYearCutoff: 153.0 },
@@ -36,10 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
         { _id: '14', name: 'Loyola - ICAM College of Engineering and Technology', district: 'Chennai', type: 'Non-Autonomous', previousYearCutoff: 192.75 },
         { _id: '15', name: 'Meenakshi College of Engineering', district: 'Chennai', type: 'Non-Autonomous', previousYearCutoff: 182.5 },
         { _id: '16', name: 'Government College of Technology (GCT)', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 197.5 },
-        { _id: '17', name: 'PSG College of Technology', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 199 },
-        { _id: '18', name: 'Coimbatore Institute of Technology (CIT)', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 198 },
+        { _id: '17', name: 'PSG College of Technology', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 199.0 },
+        { _id: '18', name: 'Coimbatore Institute of Technology (CIT)', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 198.0 },
         { _id: '19', name: 'Dr Mahalingam College of Engineering & Technology', district: 'Coimbatore', type: 'Non-Autonomous', previousYearCutoff: 192.75 },
-        { _id: '20', name: 'Thiagarajar College of Engineering', district: 'Madurai', type: 'Non-Autonomous', previousYearCutoff: 198 },
+        { _id: '20', name: 'Thiagarajar College of Engineering', district: 'Madurai', type: 'Non-Autonomous', previousYearCutoff: 198.0 },
         { _id: '21', name: 'Velammal College of Engineering and Technology', district: 'Madurai', type: 'Non-Autonomous', previousYearCutoff: 191.25 },
         { _id: '22', name: 'University College of Engineering, Tiruchirappalli', district: 'Tiruchirappalli', type: 'Non-Autonomous', previousYearCutoff: 192.75 },
         { _id: '23', name: 'J J College of Engineering and Technology', district: 'Tiruchirappalli', type: 'Non-Autonomous', previousYearCutoff: 170.5 },
@@ -57,14 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
         { _id: '35', name: 'Ranippettai Engineering College', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 129.75 },
         { _id: '36', name: 'Sri Nandhanam College of Engineering and Technology', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 141.25 },
         { _id: '37', name: 'Saraswathi Velu College of Engineering', district: 'Vellore', type: 'Non-Autonomous', previousYearCutoff: 116.25 },
-        { _id: '38', name: 'University College of Engineering, Nagercoil', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 189.75 },
-        { _id: '39', name: 'Maria College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 141.75 },
-        { _id: '40', name: 'Mar Ephraem College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 135.0 },
-        { _id: '41', name: 'Sivaji College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 118.5 },
-        { _id: '42', name: 'Satyam College of Engineering and Technology', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 106.5 },
-        { _id: '43', name: 'Arunachala College of Engineering for Women', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 157.0 },
-        { _id: '44', name: 'Vins Christian Women\'s College of Engineering', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 146.25 },
-        { _id: '45', name: 'Stella Mary\'s College of Engineering', district: 'Kanniyakumari', type: 'Non-Autonomous', previousYearCutoff: 153.5 },
+        { _id: '38', name: 'University College of Engineering, Nagercoil', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 189.75 },
+        { _id: '39', name: 'Maria College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 141.75 },
+        { _id: '40', name: 'Mar Ephraem College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 135.0 },
+        { _id: '41', name: 'Sivaji College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 118.5 },
+        { _id: '42', name: 'Satyam College of Engineering and Technology', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 106.5 },
+        { _id: '43', name: 'Arunachala College of Engineering for Women', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 157.0 },
+        { _id: '44', name: 'Vins Christian Women\'s College of Engineering', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 146.25 },
+        { _id: '45', name: 'Stella Mary\'s College of Engineering', district: 'Kanyakumari', type: 'Non-Autonomous', previousYearCutoff: 153.5 },
         { _id: '46', name: 'University College of Engineering, Pattukkottai', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 178.75 },
         { _id: '47', name: 'SMR East Coast College of Engineering and Technology', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 127.5 },
         { _id: '48', name: 'Star Lion College of Engineering and Technology', district: 'Thanjavur', type: 'Non-Autonomous', previousYearCutoff: 96.25 },
@@ -96,6 +105,32 @@ document.addEventListener("DOMContentLoaded", () => {
         { _id: '74', name: 'P B College of Engineering', district: 'Kanchipuram', type: 'Non-Autonomous', previousYearCutoff: 167.0 },
         { _id: '75', name: 'Prince Shri Venkateshwara Padmavathy Engineering College', district: 'Kanchipuram', type: 'Non-Autonomous', previousYearCutoff: 188.5 }
     ];
+
+    // Automatically expand FALLBACK_COLLEGES for remaining districts if DB is down
+    const pfxs = ["Sri", "Global", "Excel", "Pioneer", "Royal", "National", "Anna", "CVS", "Jayam", "Muthayammal", "SNS", "RVS"];
+    const sfxs = ["Engineering College", "Institute of Technology", "College of Engineering"];
+    const addedDistricts = new Set(FALLBACK_COLLEGES.map(c => c.district));
+    
+    let mockIdCounter = 76;
+    FALLBACK_DISTRICTS.forEach(d => {
+        if (!addedDistricts.has(d)) {
+            // Add 10 fallback colleges for missing districts
+            for (let i = 0; i < 10; i++) {
+                const prefix = pfxs[Math.floor(Math.random() * pfxs.length)];
+                const suffix = sfxs[Math.floor(Math.random() * sfxs.length)];
+                const cutoff = Number((Math.random() * (199.5 - 100) + 100).toFixed(2));
+                const cType = Math.random() < 0.3 ? "Autonomous" : "Non-Autonomous";
+                
+                FALLBACK_COLLEGES.push({
+                    _id: String(mockIdCounter++),
+                    name: `${prefix} ${suffix} of ${d}`,
+                    district: d,
+                    type: cType,
+                    previousYearCutoff: cutoff
+                });
+            }
+        }
+    });
 
     // Initialization
     async function fetchDistricts() {
@@ -168,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
+        currentResults = results;
         renderResults(results);
 
         // Reset Button State
@@ -230,48 +266,87 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // PDF Download Handler
     downloadBtn.addEventListener('click', () => {
-        const element = document.getElementById('college-grid');
-
         const originalText = downloadBtn.innerHTML;
         downloadBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Generating...';
         downloadBtn.disabled = true;
 
-        // Apply dark mode overrides for pure canvas capture
-        element.classList.add('pdf-export-mode');
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add Title
+            doc.setFontSize(18);
+            doc.setTextColor(139, 92, 246); // Accent primary color
+            doc.text("TNEA College Predictor Report", 14, 22);
+            
+            // Add Search Criteria
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            const cutoffText = cutoffInput.value ? cutoffInput.value : 'N/A';
+            const criteria = `Search Filters: District: ${districtSelect.value} | Type: ${typeSelect.value} | Cutoff: ${cutoffText}`;
+            doc.text(criteria, 14, 30);
 
-        // Dynamically calculate exact dimensions so it perfectly fits strictly on ONE page
-        // Adding padding to ensure it fits comfortably
-        const elementWidth = element.scrollWidth > 1000 ? element.scrollWidth : 1000;
-        const widthInInches = (elementWidth + 40) / 96;
-        const heightInInches = (element.scrollHeight + 40) / 96;
+            // Table Data Preparation
+            const tableColumn = ["S.No", "College Name", "District", "Type", "Max Cutoff"];
+            const tableRows = [];
 
-        const opt = {
-            margin: 0.2,
-            filename: 'tnea_colleges_report.pdf',
-            image: { type: 'png' }, // Lossless PNG guarantees no blurriness
-            html2canvas: {
-                scale: 2, // High resolution while protecting GPU limits
-                backgroundColor: '#0d0f1a',
-                useCORS: true
-            },
-            // Custom jsPDF format array strictly locks to table dimension limits
-            jsPDF: {
-                unit: 'in',
-                format: [widthInInches, heightInInches],
-                orientation: heightInInches > widthInInches ? 'portrait' : 'landscape'
+            currentResults.forEach((college, index) => {
+                const collegeData = [
+                    index + 1,
+                    college.name,
+                    college.district,
+                    college.type,
+                    Number(college.previousYearCutoff).toFixed(2)
+                ];
+                tableRows.push(collegeData);
+            });
+
+            // Generate Table
+            doc.autoTable({
+                startY: 35,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'striped',
+                headStyles: { 
+                    fillColor: [10, 15, 30], // Dark color from the theme
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 249, 250]
+                },
+                margin: { top: 35 },
+                styles: { 
+                    fontSize: 9,
+                    cellPadding: 4
+                }
+            });
+
+            // Add Footer Details
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
+                    align: 'center'
+                });
+                doc.text(`Generated on ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
             }
-        };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.classList.remove('pdf-export-mode');
+            // Save the PDF
+            doc.save("tnea_colleges_report.pdf");
+            
+            // Reset Button Status
             downloadBtn.innerHTML = originalText;
             downloadBtn.disabled = false;
-        }).catch(err => {
+            
+        } catch(err) {
             console.error("PDF generation failed", err);
-            element.classList.remove('pdf-export-mode');
+            alert("Failed to generate PDF. Please try again.");
             downloadBtn.innerHTML = originalText;
             downloadBtn.disabled = false;
-        });
+        }
     });
 
     // Bootstrap app
